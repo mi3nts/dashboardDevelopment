@@ -16,8 +16,10 @@ import pandas as pd
 import time
 from collections import OrderedDict
 import plotly.express as px
+import os
+import time
 
-
+df_contour = pd.DataFrame()
 l=1000
 
 date_time_pht= deque(maxlen=l)#date time for pressure temperature and humidity
@@ -182,7 +184,7 @@ app.layout = html.Div(
         		dcc.Graph(id = 'contour-live-graph', animate = True),
         		dcc.Interval(
         			id = 'contour-graph-update',
-        			interval = 1000,
+        			interval = 5000,
         			n_intervals = 0
         		),
             ],
@@ -194,31 +196,19 @@ app.layout = html.Div(
                             [html.H6("Location of the Nodes", className="graph__title")]
                         ),
                 		dcc.Graph(id = 'map-live-graph', animate = True),
-                		# dcc.Interval(
-                 	# 		id = 'map-graph-update',
-                 	# 		interval = 5000,
-                 	# 		n_intervals = 0
-                		# ),
+                		 dcc.Interval(
+                 	 		id = 'map-graph-update',
+                 	 		interval = 5000,
+                 	 		n_intervals = 0,
+
+                		 ),
                     ],
                         className="one-third column graph__container first" #wind__speed__container,
                     ),
                 ]),
 
 
-                
-                # html.Div([
-                #             html.Div(
-                #                 [html.H6("Location of the Nodes", className="graph__title")]
-                #             ),
-                #     		dcc.Graph(id = 'Nodes-live-graph', animate = True),
-                #     		dcc.Interval(
-                #     			id = 'nodes-graph-update',
-                #     			interval = 5000,
-                #     			n_intervals = 0
-                #     		),
-                #         ],
-                #             className="one-third column graph__container first" #wind__speed__container,
-                #         ),
+
 
         ])
 	]
@@ -472,30 +462,48 @@ def update_graph_bin(n):
 
 @app.callback(Output('contour-live-graph', 'figure'),[ Input('contour-graph-update', 'n_intervals') ])
 def update_graph_contour(n):
-    df_json = pd.read_json('mintsData\\rawMQTT\\001e0636e527\\OPCN3.json', lines = True)
-    date_time_contour.append(df_json['dateTime'][0])
-    df_json = df_json.iloc[:,2:26]
-    bin_len = list(df_json.iloc[0])
-    bin_len_new = [np.finfo(float).eps if x==0 else x for x in bin_len]
-    bin_len_log = list(np.log10(bin_len_new))
+    if os.path.isfile("mintsData\\rawMQTT\\001e0636e527\\OPCN3.json"):
+        df = pd.read_json('mintsData\\rawMQTT\\001e0636e527\\OPCN3.json',lines=True)
+        df.to_csv("D:\\UTD\\UTDFall2021\\DashBoard\\Python\\empty.csv", mode='a', index=False, sep=",")
+    df_contour = pd.read_csv("empty.csv")
+    date_time_contour.append(df_contour['dateTime'][0])
+    #c= df_json[:,2:26]
+    df_bins = df_contour.iloc[:,2:26]
+    df_bins = df_bins.replace(0, 2)
+    print("length",date_time_contour)
+    list_df = list(df.to_numpy())
+    #bin_len = list(df_json.iloc[0])
+    # bin_len_new = [np.finfo(float).eps if x==0 else x for x in bin_len]
+    # bin_len_log = list(np.log10(bin_len_new))
+    # bin_len_log =list(np.log10(np.random.randint(1,100,24)))
+    #date_time_contour.append(df_json['dateTime'][0])
     bin_boundries_high = [.46,.66,1,1.3,1.7,2.3,3.0,4.0,5.2,6.5,8,10,12,14,16,18,20,22,25,28,31,34,37,40]
     bin_boundries_low  = [0.35,.46,.66,1,1.3,1.7,2.3,3.0,4.0,5.2,6.5,8,10,12,14,16,18,20,22,25,28,31,34,37]
     bin_boundries_avg_size = list((np.add(bin_boundries_high , bin_boundries_low))/2)  
-    data = go.Contour(
-        z = bin_len_log,
-        x = list(date_time_contour),
-        y = bin_boundries_avg_size,
-        #name='Distribution',
-        colorscale = 'Electric',
-                colorbar=dict(
-            title="Count"
-        )
-        #mode= 'lines+markers'
-        ),
-    
-    layout = go.Layout(xaxis = dict(range = [min(date_time_contour),max(date_time_contour)]),)#yaxis = dict(range = [min(c4h10),max(c4h10)]))
+    fig8 = go.Figure(data =
+        go.Contour(
+            z=list_df,
+            x= list(date_time_contour),
+            y=bin_boundries_avg_size # vertical axis
+        ))
+#layout = go.Layout(xaxis = dict(range = [min(date_time_contour),max(date_time_contour)]),)#yaxis = dict(range = [min(c4h10),max(c4h10)]))
 
-    fig8=go.Figure(data,layout)#,layout)
+# fig=go.Figure(data,)#layout)
+# fig.update_layout( 
+#                     xaxis_title="Date Time ",
+#                     yaxis_title="Size",
+#                     #plot_bgcolor=app_color["graph_bg"],
+#                     #paper_bgcolor=app_color["graph_bg"],
+#                     font_color="white",
+#                     font=dict(
+#                     color="white"
+#                     )
+#                   )
+
+#pyo.plot(fig)
+    #layout = go.Layout(xaxis = dict(range = [min(date_time_contour),max(date_time_contour)]),)#yaxis = dict(range = [min(c4h10),max(c4h10)]))
+
+    #fig8=go.Figure(data,)#layout)
     fig8.update_layout( 
                         xaxis_title="Date Time ",
                         yaxis_title="Size",
@@ -508,18 +516,21 @@ def update_graph_contour(n):
                       )
 
     return fig8
-# @app.callback(Output('map-live-graph', 'figure'),[ Input('map-graph-update', 'n_intervals') ])
-# def update_graph_map(n):
-# df_json = pd.read_json('mintsData\\rawMQTT\\001e0636e527\\GPGGA.json', lines = True)
-
-
-# lat.append(df_json['latitude'][0])
-# lon.append(df_json['longitude'][0])
-
-# fig9 = px.scatter_mapbox( df , lat=[lat[0]], lon=[lon[0]], #hover_name="City", hover_data=["State", "Population"],
-#                     color_discrete_sequence=["fuchsia"], zoom=3, height=300)
-# fig9.update_layout(mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0})
-     # return fig9
+@app.callback(Output('map-live-graph', 'figure'),[ Input('map-graph-update', 'n_intervals') ])
+def update_graph_map(n):
+    df_json = pd.read_json('mintsData\\rawMQTT\\001e0636e527\\GPGGA.json', lines = True)
+    
+    
+    lat.append(df_json['latitude'][0]/100)
+    lon.append(df_json['longitude'][0]/100)
+    list_lat= list(lat)
+    list_lon= list(lon)
+    print("lat",list_lat)
+    print("lon",list_lon)
+    fig9 = px.scatter_mapbox(lat=list_lat, lon=list_lon, #hover_name="City", hover_data=["State", "Population"],
+                        color_discrete_sequence=["fuchsia"], zoom=3, height=300)
+    fig9.update_layout(mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0})
+    return fig9
 
 if __name__ == '__main__':
 	app.run_server()
