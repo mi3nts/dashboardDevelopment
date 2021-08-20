@@ -26,6 +26,7 @@ Manifest.toml
 data/referenceMQTT/*
 data/rawMQTT/*
 data/aerial-vehicle/*
-mqttSubscribers
 data/credentials.yml
 env/*
+mqttSubscribers/
+
