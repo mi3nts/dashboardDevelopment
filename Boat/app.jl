@@ -28,7 +28,7 @@ function plotTest()
                     xaxis_title = "time",
                     yaxis_title = "c2h5oh",
                     plot_bgcolor = :transparent,
-                    paper_bgcolor = :transparent, 
+                    paper_bgcolor = :transparent,
                     )
     plot(trace, layout)
 end
