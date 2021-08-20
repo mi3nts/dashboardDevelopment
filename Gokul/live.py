@@ -90,7 +90,7 @@ app.layout = html.Div(
            ############### Bin #################### 
             html.Div([
                     html.Div(
-                        [html.H6("Bin Distribution", className="graph__title")]
+                        [html.H6("Size Distribution", className="graph__title")]
                     ),
             		dcc.Graph(id = 'bin-live-graph', animate = True),
             		dcc.Interval(
@@ -334,7 +334,9 @@ def update_graph_pm(n):
                 name='PM 10',
                 mode= 'lines+markers'#,marginal_y="histogram"
               )
-    trace3 = go.Histogram(y=list(pm10))
+    trace3 = go.Histogram(y=list(pm1),name='PM 1',marker_color='rgb(99,110,250)',)
+    trace4 = go.Histogram(y=list(pm2_5),name='PM 2.5',marker_color='rgb(239,85,59)')
+    trace5 = go.Histogram(y=list(pm10),name='PM 10',marker_color='rgb(0,204,150)')
     
     fig3 = tools.make_subplots(rows = 2, cols =3,
                                 specs=[[{"rowspan":2,"colspan":2}, None,{"rowspan":2} ],
@@ -349,6 +351,8 @@ def update_graph_pm(n):
 
     #fig3=go.Figure(data)
     fig3.append_trace(trace3, 1, 3)
+    fig3.append_trace(trace4, 1, 3)
+    fig3.append_trace(trace5, 1, 3)
     fig3.update_layout(xaxis = dict(range = [min(date_time_pm),max(date_time_pm)]),
                         xaxis_title="Date Time ",
                         yaxis_title="Particulate Matter",
@@ -481,8 +485,8 @@ def update_graph_bin(n):
 
     fig7=go.Figure(data,layout)
     fig7.update_layout( 
-                        #xaxis_title="Date Time ",
-                        #yaxis_title="Wind Speed (m/s)",
+                        xaxis_title="Bins",
+                        yaxis_title="Size ",
                         plot_bgcolor=app_color["graph_bg"],
                         paper_bgcolor=app_color["graph_bg"],
                         font_color="white",
@@ -523,12 +527,14 @@ def update_graph_contour(n):
             go.Contour(
                 z=list_bins,
                 x=date_time_contour,
-                y=bin_boundries_avg_size # vertical axis
-            ))
+                y=bin_boundries_avg_size, # vertical axis
+                        colorbar=dict(
+                                     title='log(Count)')
+                ))
     
         fig8.update_layout( 
                             xaxis_title="Date Time ",
-                            yaxis_title="Size",
+                            yaxis_title="Log(Size(\u03BC"+ "m))",
                             #plot_bgcolor=app_color["graph_bg"],
                             paper_bgcolor=app_color["graph_bg"],
                             font_color="white",
