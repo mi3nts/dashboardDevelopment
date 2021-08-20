@@ -82,7 +82,7 @@ function plotContour()
 
     data = contour(;
                    x = sensors[:OPCN3][:dt],
-                   y = log10.(binCenters),
+                   y = binCenters,
                    z = log10.(hcat(sensors[:OPCN3][:bins]...) .+ 1.0 ),  # add 1 to each count so we don't have issues with log(0)
                    colorscale = "Jet",
                    ncontours = 100,
@@ -92,7 +92,8 @@ function plotContour()
     layout = Layout(;
                     title = "Particle Size Distribution",
                     xaxis_title = "time",
-                    yaxis_title = "Log10 of Particle Radius [μm]",
+                    yaxis_title = "Particle Radius [μm]",
+                    yaxis_type = "log",
                     plot_bgcolor = :transparent,
                     paper_bgcolor = :transparent,
                     )
@@ -128,7 +129,7 @@ app = dash()
 
 app.layout = html_div() do
     html_h1(
-        "MINTS Live Dashboards",
+        "MINTS Live Dashboards: AV Air Package",
         style=Dict("color"=>:black, "textAlign"=>"center"),
     ),
     html_div(
