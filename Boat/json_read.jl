@@ -4,7 +4,8 @@ using Dates
 
 dateformat = DateFormat("yyyy-mm-dd HH:MM:SS")
 Npoints = 1000
-basepath = "../data/rawMQTT/001e0610c2ed"
+basepath = "/home/teamlary/mintsData/rawMQTT/001e0610c2ed"
+
 
 
 
@@ -57,6 +58,7 @@ function APDS9002()
 
     datetime = res["dateTime"]
     dt = split(datetime, ".")[1]
+    dt = DateTime(dt, dateformat)
 
     if length(sensors[:APDS9002][:dt]) > 0 &&  dt == sensors[:APDS9002][:dt][end]
         return -1
@@ -72,10 +74,10 @@ function APDS9002()
     end
 
     if length(sensors[:APDS9002][:dt]) < Npoints
-        push!(sensors[:APDS9002][:dt], DateTime(dt, dateformat))
+        push!(sensors[:APDS9002][:dt], dt)
     else
         sensors[:APDS9002][:dt] .= circshift(sensors[:APDS9002][:dt], -1)
-        sensors[:APDS9002][:dt][end] = DateTime(dt, dateformat)
+        sensors[:APDS9002][:dt][end] = dt
     end
 end
 
@@ -84,8 +86,9 @@ function BME280()
     res = JSON.parsefile(sensors[:BME280][:path])
     datetime = res["dateTime"]
     dt = split(datetime, ".")[1]
+    dt = DateTime(dt, dateformat)
 
-    if length(sensors[:BME280][:dt]) > 0 && dt == sensors[:BME280][:dt][end]
+    if length(sensors[:BME280][:dt]) > 0 dt == sensors[:BME280][:dt][end]
         return -1
     end
 
@@ -118,10 +121,10 @@ function BME280()
 
 
     if length(sensors[:BME280][:dt]) < Npoints
-        push!(sensors[:BME280][:dt], DateTime(dt, dateformat))
+        push!(sensors[:BME280][:dt], dt)
     else
         sensors[:BME280][:dt] .= circshift(sensors[:BME280][:dt], -1)
-        sensors[:BME280][:dt][end] = DateTime(dt, dateformat)
+        sensors[:BME280][:dt][end] = dt
     end
 
 end
@@ -131,6 +134,7 @@ function GUV001()
     res = JSON.parsefile(sensors[:GUV001][:path])
     datetime = res["dateTime"]
     dt = split(datetime, ".")[1]
+    dt = DateTime(dt, dateformat)
 
     if length(sensors[:GUV001][:dt]) > 0 && dt == sensors[:GUV001][:dt][end]
         return -1
@@ -146,10 +150,10 @@ function GUV001()
     end
 
     if length(sensors[:GUV001][:dt]) < Npoints
-        push!(sensors[:GUV001][:dt], DateTime(dt, dateformat))
+        push!(sensors[:GUV001][:dt], dt)
     else
         sensors[:GUV001][:dt] .= circshift(sensors[:GUV001][:dt], -1)
-        sensors[:GUV001][:dt][end] = DateTime(dt, dateformat)
+        sensors[:GUV001][:dt][end] = dt
     end
 end
 
@@ -158,6 +162,7 @@ function MGS001()
     res = JSON.parsefile(sensors[:MGS001][:path])
     datetime = res["dateTime"]
     dt = split(datetime, ".")[1]
+    dt = DateTime(dt, dateformat)
 
     if length(sensors[:MGS001][:dt]) > 0 && dt == sensors[:MGS001][:dt][end]
         return -1
@@ -165,12 +170,11 @@ function MGS001()
 
 
 
-
     if length(sensors[:MGS001][:dt]) < Npoints
-        push!(sensors[:MGS001][:dt], DateTime(dt, dateformat))
+        push!(sensors[:MGS001][:dt], dt)
     else
         sensors[:MGS001][:dt] .= circshift(sensors[:MGS001][:dt], -1)
-        sensors[:MGS001][:dt][end] = DateTime(dt, dateformat)
+        sensors[:MGS001][:dt][end] = dt
     end
 
     if length(sensors[:MGS001][:c2h5oh]) < Npoints
@@ -234,6 +238,7 @@ function OPCN3()
     res = JSON.parsefile(sensors[:OPCN3][:path])
     datetime = res["dateTime"]
     dt = split(datetime, ".")[1]
+    dt = DateTime(dt, dateformat)
 
     if length(sensors[:OPCN3][:dt]) > 0 && dt == sensors[:OPCN3][:dt][end]
         return -1
@@ -241,10 +246,10 @@ function OPCN3()
 
 
     if length(sensors[:OPCN3][:dt]) < Npoints
-        push!(sensors[:OPCN3][:dt], DateTime(dt, dateformat))
+        push!(sensors[:OPCN3][:dt], dt)
     else
         sensors[:OPCN3][:dt] .= circshift(sensors[:OPCN3][:dt], -1)
-        sensors[:OPCN3][:dt][end] = DateTime(dt, dateformat)
+        sensors[:OPCN3][:dt][end] = dt
     end
 
     if length(sensors[:OPCN3][:pm1]) < Npoints
@@ -317,6 +322,7 @@ function SI114X()
     res = JSON.parsefile(sensors[:SI114X][:path])
     datetime = res["dateTime"]
     dt = split(datetime, ".")[1]
+    dt = DateTime(dt, dateformat)
 
     if length(sensors[:SI114X][:dt]) > 0 && dt == sensors[:SI114X][:dt][end]
         return -1
@@ -325,10 +331,10 @@ function SI114X()
 
 
     if length(sensors[:SI114X][:dt]) < Npoints
-        push!(sensors[:SI114X][:dt], DateTime(dt, dateformat))
+        push!(sensors[:SI114X][:dt], dt)
     else
         sensors[:SI114X][:dt] .= circshift(sensors[:SI114X][:dt], -1)
-        sensors[:SI114X][:dt][end] = DateTime(dt, dateformat)
+        sensors[:SI114X][:dt][end] = dt
     end
 
     if length(sensors[:SI114X][:visible]) < Npoints

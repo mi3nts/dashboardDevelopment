@@ -5,6 +5,13 @@ using JSON
 using Dates
 include("json_read.jl")
 
+
+
+binBoundariesHigh = [.46,.66,1,1.3,1.7,2.3,3.0,4.0,5.2,6.5,8,10,12,14,16,18,20,22,25,28,31,34,37,40];
+binBoundariesLow  = [0.35,.46,.66,1,1.3,1.7,2.3,3.0,4.0,5.2,6.5,8,10,12,14,16,18,20,22,25,28,31,34,37];
+binCenters = 0.5 .* (binBoundariesHigh .+ binBoundariesLow)
+
+
 # load in some test data to play with
 BME280()
 GUV001()
@@ -13,46 +20,90 @@ OPCN3()
 SI114X()
 
 
-function plotTest()
+function plotPM()
     # NOTE: we must use the semicolon in beginning of plotly commands as everything works via kwargs
 
-    trace = scatter(;
-                    x = sensors[:MGS001][:dt],
-                    y = sensors[:MGS001][:c2h5oh],
+    pm1 = scatter(;
+                  x = sensors[:OPCN3][:dt],
+                  y = sensors[:OPCN3][:pm1],
+                  mode = "lines+markers",
+                  name = "PM 1",
+                  marker_color = :red,
+                  marker_size = 8,
+                  )
+
+    pm2_5 = scatter(;
+                  x = sensors[:OPCN3][:dt],
+                  y = sensors[:OPCN3][:pm2_5],
                     mode = "lines+markers",
-                    marker_color = :red,
-                    marker_size = 8,
-                    )
+                    name = "PM 2.5",
+                  marker_color = :blue,
+                  marker_size = 8,
+                  )
+
+    pm10 = scatter(;
+                  x = sensors[:OPCN3][:dt],
+                  y = sensors[:OPCN3][:pm10],
+                   mode = "lines+markers",
+                   name = "PM 10",
+                  marker_color = :green,
+                  marker_size = 8,
+                  )
+
+
+
     layout = Layout(;
-                    title = "Test Plot",
+                    title = "PM Levels",
                     xaxis_title = "time",
-                    yaxis_title = "c2h5oh",
+                    yaxis_title = "PM [μg/m³]",
                     plot_bgcolor = :transparent,
                     paper_bgcolor = :transparent,
                     )
-    plot(trace, layout)
+    plot([pm1, pm2_5, pm10], layout)
 end
 
 
-# function plotTest()
-#     p = plot(sensors[:MGS001][:dt],
-#              sensors[:MGS001][:c2h5oh],
-#              xlabel="time",
-#              ylabel="y value",
-#              showaxeslabels=true,
-#              color=:red,
-#              autosize=true,
-#              seriestype=:line,
-#              label="",
-#              animate=true,
-#              background_color=:transparent,
-#              # foreground_color=:black,
-#              )
-#     fig =(data = Plots.plotly_series(p), layout = Plots.plotly_layout(p))
-# end
+function plotContour()
+    # data = [(
+    #     type="contour",
+    #     x = sensors[:OPCN3][:dt],
+    #     y = binCenters,
+    #     z = log.(hcat(sensors[:OPCN3][:bins]...) .+ 1.0 ),  # add 1 to each count so we don't have issues with log(0)
+    #     colorscale = "Viridis",
+    # )]
+
+    # layout=(
+    #     title = "Particle Size Distribution",
+    #     xaxis_title = "time",
+    #     yaxis_title = "bin centers"
+    # )
+
+    # return (data=data, layout=layout)
+
+    data = contour(;
+                   x = sensors[:OPCN3][:dt],
+                   y = log10.(binCenters),
+                   z = log10.(hcat(sensors[:OPCN3][:bins]...) .+ 1.0 ),  # add 1 to each count so we don't have issues with log(0)
+                   colorscale = "Jet",
+                   coloring = "heatmap",
+                   )
+
+    layout = Layout(;
+                    title = "Particle Size Distribution",
+                    xaxis_title = "time",
+                    yaxis_title = "Bin Centers",
+                    plot_bgcolor = :transparent,
+                    paper_bgcolor = :transparent,
+                    )
+    plot(data, layout)
+end
 
 
-function update_graph()
+
+
+
+
+function update_pm()
     # load in some test data to play with
     BME280()
     GUV001()
@@ -60,40 +111,57 @@ function update_graph()
     OPCN3()
     SI114X()
 
-    plotTest()
+    plotPM()
+end
+
+
+function update_contour()
+    plotContour()
 end
 
 
 
-app_color = Dict("graph_bg"=>"#082255", "graph_line"=>"#007ACE")
+#app_color = Dict("graph_bg"=>"#082255", "graph_line"=>"#007ACE")
 
 app = dash()
 
 app.layout = html_div() do
     html_h1(
-        "Test plot",
-        style=Dict("color"=>:white),
+        "MINTS Live Dashboards",
+        style=Dict("color"=>:black, "textAlign"=>"center"),
     ),
     html_div(
         children = [
             dcc_graph(
-                id="live-graph",
-                figure = plotTest()
+                id="pm-graph",
+                figure = plotPM()
             ),
+            dcc_graph(
+                id="size-contour",
+                figure = plotContour()
+            ),
+
             dcc_interval(
                 id="interval-component",
                 interval = 250, # 250 miliseconds
                 n_intervals=0
             ),
         ],
-        className = "two-thrids column wind__speed__container",
+#        className = "two-thirds column wind__speed__container",
     )
 end
 
 
-callback!(app, Output("live-graph", "figure"), Input("interval-component", "n_intervals")) do n
-    update_graph()
+callback!(app,
+          Output("pm-graph", "figure"),
+          Input("interval-component", "n_intervals")) do n
+    update_pm()
 end
+
+callback!(app, Output("size-contour", "figure"), Input("interval-component", "n_intervals")) do n
+    update_contour()
+end
+
 
 
 
