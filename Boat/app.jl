@@ -29,7 +29,7 @@ function plotPM()
                   mode = "lines+markers",
                   name = "PM 1",
                   marker_color = :red,
-                  marker_size = 8,
+                  marker_size = 5,
                   )
 
     pm2_5 = scatter(;
@@ -38,7 +38,7 @@ function plotPM()
                     mode = "lines+markers",
                     name = "PM 2.5",
                   marker_color = :blue,
-                  marker_size = 8,
+                  marker_size = 5,
                   )
 
     pm10 = scatter(;
@@ -47,7 +47,7 @@ function plotPM()
                    mode = "lines+markers",
                    name = "PM 10",
                   marker_color = :green,
-                  marker_size = 8,
+                  marker_size = 5,
                   )
 
 
@@ -85,13 +85,14 @@ function plotContour()
                    y = log10.(binCenters),
                    z = log10.(hcat(sensors[:OPCN3][:bins]...) .+ 1.0 ),  # add 1 to each count so we don't have issues with log(0)
                    colorscale = "Jet",
-                   coloring = "heatmap",
+                   ncontours = 100,
+                   contours_showlines = false,
                    )
 
     layout = Layout(;
                     title = "Particle Size Distribution",
                     xaxis_title = "time",
-                    yaxis_title = "Bin Centers",
+                    yaxis_title = "Log10 of Particle Radius [μm]",
                     plot_bgcolor = :transparent,
                     paper_bgcolor = :transparent,
                     )
