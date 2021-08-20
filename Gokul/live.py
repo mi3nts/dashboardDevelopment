@@ -8,7 +8,7 @@ import dash
 from dash.dependencies import Output, Input
 import dash_core_components as dcc
 import dash_html_components as html
-import plotly
+from plotly import tools
 import plotly.graph_objs as go
 from collections import deque
 import numpy as np
@@ -20,9 +20,10 @@ import os
 import time
 import json
 
-df_contour = pd.DataFrame()
-l=1000
 
+df_updated = pd.DataFrame()
+l=1000
+inter = 5000
 date_time_pht= deque(maxlen=l)#date time for pressure temperature and humidity
 date_time_pm = deque(maxlen=l)# date time for pm
 date_time_co = deque(maxlen=l)#date time for co
@@ -71,36 +72,6 @@ app.layout = html.Div(
 ############################################## BODY ###################################################################
         html.Div([
            html.Div([ 
-            ############### WindSpeed #################### 
-            html.Div([
-                html.Div(
-                    [html.H6("Wind Direction", className="graph__title")]
-                ),
-        		dcc.Graph(id = 'wind-live-graph', animate = True),
-        		dcc.Interval(
-        			id = 'wind-graph-update',
-        			interval = 1000,
-        			n_intervals = 0
-        		),
-            ],
-                className="one-third column graph__container first" #wind__speed__container,
-            ),
-            
-            ############### PHT #################### 
-            html.Div([
-                html.Div(
-                    [html.H6("Pressure Humidity Temperature", className="graph__title")]
-                ),
-        		dcc.Graph(id = 'pht-live-graph', animate = True),
-        		dcc.Interval(
-        			id = 'pht-graph-update',
-        			interval = 5000,
-        			n_intervals = 0
-        		),
-            ],
-                className="one-third column graph__container first" #wind__speed__container,
-            ),
-            
             ############### PM #################### 
             html.Div([
                 html.Div(
@@ -109,7 +80,39 @@ app.layout = html.Div(
         		dcc.Graph(id = 'pm-live-graph', animate = True),
         		dcc.Interval(
         			id = 'pm-graph-update',
-        			interval = 5000,
+        			interval = inter,
+        			n_intervals = 0
+        		),
+            ],
+                className="one-third column graph__container first" #wind__speed__container,
+            ),
+            
+           ############### Bin #################### 
+            html.Div([
+                    html.Div(
+                        [html.H6("Bin Distribution", className="graph__title")]
+                    ),
+            		dcc.Graph(id = 'bin-live-graph', animate = True),
+            		dcc.Interval(
+            			id = 'bin-graph-update',
+            			interval = inter,
+            			n_intervals = 0
+            		),
+                ],
+                    className="one-third column graph__container first" #wind__speed__container,
+                ),
+
+            
+        ############### Contour #################### 
+            
+            html.Div([
+                html.Div(
+                    [html.H6("Contour Distribution", className="graph__title")]
+                ),
+        		dcc.Graph(id = 'contour-live-graph', animate = True),
+        		dcc.Interval(
+        			id = 'contour-graph-update',
+        			interval = inter,
         			n_intervals = 0
         		),
             ],
@@ -125,7 +128,7 @@ app.layout = html.Div(
         		dcc.Graph(id = 'co-live-graph', animate = True),
         		dcc.Interval(
         			id = 'co-graph-update',
-        			interval = 5000,
+        			interval = inter,
         			n_intervals = 0
         		),
             ],
@@ -139,7 +142,7 @@ app.layout = html.Div(
       		dcc.Graph(id = 'no2-live-graph', animate = True),
       		dcc.Interval(
       			id = 'no2-graph-update',
-      			interval = 5000,
+      			interval = inter,
       			n_intervals = 0
       		),
           ],
@@ -154,7 +157,7 @@ app.layout = html.Div(
         		dcc.Graph(id = 'c4h10-live-graph', animate = True),
         		dcc.Interval(
         			id = 'c4h10-graph-update',
-        			interval = 5000,
+        			interval = inter,
         			n_intervals = 0
         		),
             ],
@@ -162,36 +165,39 @@ app.layout = html.Div(
             ),
                                     
           ]),
-    ##################### Bin ############################
+
     html.Div([
-        html.Div([
+    ##################### Wind Speed ############################
+            html.Div([
                 html.Div(
-                    [html.H6("Bin Distribution", className="graph__title")]
+                    [html.H6("Wind Direction", className="graph__title")]
                 ),
-        		dcc.Graph(id = 'bin-live-graph', animate = True),
+        		dcc.Graph(id = 'wind-live-graph', animate = True),
         		dcc.Interval(
-        			id = 'bin-graph-update',
-        			interval = 5000,
+        			id = 'wind-graph-update',
+        			interval = inter,
         			n_intervals = 0
         		),
             ],
                 className="one-third column graph__container first" #wind__speed__container,
             ),
-    ######################## Contour #########################    
-                html.Div([
+     ######################## PTH #########################
+     
+            html.Div([
                 html.Div(
-                    [html.H6("Contour Distribution", className="graph__title")]
+                    [html.H6("Pressure Humidity Temperature", className="graph__title")]
                 ),
-        		dcc.Graph(id = 'contour-live-graph', animate = True),
+        		dcc.Graph(id = 'pht-live-graph', animate = True),
         		dcc.Interval(
-        			id = 'contour-graph-update',
-        			interval = 5000,
+        			id = 'pht-graph-update',
+        			interval = inter,
         			n_intervals = 0
         		),
             ],
                 className="one-third column graph__container first" #wind__speed__container,
             ),
-                
+
+       ################### Map #########################         
             html.Div([
                         html.Div(
                             [html.H6("Location of the Nodes", className="graph__title")]
@@ -199,7 +205,7 @@ app.layout = html.Div(
                 		dcc.Graph(id = 'map-live-graph', animate = True),
                 		 dcc.Interval(
                  	 		id = 'map-graph-update',
-                 	 		interval = 5000,
+                 	 		interval = inter,
                  	 		n_intervals = 0,
 
                 		 ),
@@ -214,6 +220,10 @@ app.layout = html.Div(
         ])
 	]
 )
+
+def create_df():
+    df_update_contour = pd.DataFrame()
+    return df_update_contour
 
 @app.callback(Output('wind-live-graph', 'figure'),[ Input('wind-graph-update', 'n_intervals') ])
 def update_graph_wind(n):
@@ -289,6 +299,8 @@ def update_graph_pht(n):
                         color="white"
                             ))
     #fig2.update_xaxes(rangeslider_visible=True)
+    fig2.update_xaxes(tickangle=45,gridcolor='#1B2AAA')
+    fig2.update_yaxes(gridcolor='#1B2AAA')
     return fig2
 
 @app.callback(Output('pm-live-graph', 'figure'),[ Input('pm-graph-update', 'n_intervals') ])
@@ -300,31 +312,44 @@ def update_graph_pm(n):
     pm1.append(df_json['pm1'][0])
     pm2_5.append(df_json['pm2_5'][0])
     pm10.append(df_json['pm10'][0])
-    
-
+    # df_wide = pd.DataFrame([list(date_time_pm),list(pm1),list(pm2_5),list(pm10)]).transpose()
+    # df_wide.columns = ["dateTime","pm1","pm2_5","pm10"]
+    # df_long=pd.melt(df_wide, id_vars=['dateTime'], value_vars=['pm1', 'pm2_5', 'pm10'])
+    # fig3 = px.scatter(df_long, x='dateTime', y='value', color='variable',marginal_y="histogram")
     trace0 = go.Scatter(
                 x= list(date_time_pm),
                 y= list(pm1),
                 name='PM 1',
                 mode= 'lines+markers'#,marginal_y="histogram"
-             )
+              )
     trace1 = go.Scatter(
                 x= list(date_time_pm),
                 y= list(pm2_5),
                 name='PM 2.5',
                 mode= 'lines+markers'#,marginal_y="histogram"
-             )
+              )
     trace2 = go.Scatter(
                 x= list(date_time_pm),
                 y= list(pm10),
                 name='PM 10',
                 mode= 'lines+markers'#,marginal_y="histogram"
-             )
-    data = [trace0,trace1,trace2]
-    layout = go.Layout(xaxis = dict(range = [min(date_time_pm),max(date_time_pm)]),)#yaxis = dict(range = [0,1]))
+              )
+    trace3 = go.Histogram(y=list(pm10))
+    
+    fig3 = tools.make_subplots(rows = 2, cols =3,
+                                specs=[[{"rowspan":2,"colspan":2}, None,{"rowspan":2} ],
+                                       [None, None,None]],
+                               horizontal_spacing = 0.2 )
+    fig3.append_trace(trace0, 1, 1)
+    fig3.append_trace(trace1, 1, 1)
+    fig3.append_trace(trace2, 1, 1)
+    
+    #data = [trace0,trace1,trace2]
+    #layout = go.Layout(,)#yaxis = dict(range = [0,1]))
 
-    fig3=go.Figure(data,layout)
-    fig3.update_layout(
+    #fig3=go.Figure(data)
+    fig3.append_trace(trace3, 1, 3)
+    fig3.update_layout(xaxis = dict(range = [min(date_time_pm),max(date_time_pm)]),
                         xaxis_title="Date Time ",
                         yaxis_title="Particulate Matter",
                         plot_bgcolor=app_color["graph_bg"],
@@ -333,8 +358,10 @@ def update_graph_pm(n):
                         legend_title="PM",
                         font=dict(
                         color="white"
-                            ))
+                            ),bargap = 0.01)
     #fig3.update_xaxes(rangeslider_visible=True)
+    fig3.update_xaxes(tickangle=45,gridcolor='#1B2AAA')
+    fig3.update_yaxes(tickangle=45,gridcolor='#1B2AAA')
     return fig3
 
 
@@ -367,6 +394,8 @@ def update_graph_co(n):
                         color="white"
                             ))
     #fig4.update_xaxes(rangeslider_visible=True)
+    fig4.update_xaxes(tickangle=45,gridcolor='#1B2AAA')
+    fig4.update_yaxes(gridcolor='#1B2AAA')
     return fig4
 
 @app.callback(Output('no2-live-graph', 'figure'),[ Input('no2-graph-update', 'n_intervals') ])
@@ -396,7 +425,10 @@ def update_graph_no2(n):
                         font=dict(
                         color="white"
                             ))
+    fig5.update_xaxes(gridcolor='#1B2AAA',tickangle=45)
+    fig5.update_yaxes(gridcolor='#1B2AAA')
     #fig5.update_xaxes(rangeslider_visible=True)
+
     return fig5
 
 @app.callback(Output('c4h10-live-graph', 'figure'),[ Input('c4h10-graph-update', 'n_intervals') ])
@@ -427,6 +459,8 @@ def update_graph_c4h10(n):
                         color="white"
                             ))
     #fig6.update_xaxes(rangeslider_visible=True)
+    fig6.update_xaxes(gridcolor='#1B2AAA',tickangle=45)
+    fig6.update_yaxes(gridcolor='#1B2AAA')
     return fig6
     
 @app.callback(Output('bin-live-graph', 'figure'),[ Input('bin-graph-update', 'n_intervals') ])
@@ -457,66 +491,53 @@ def update_graph_bin(n):
                         color="white"
                             ),bargap=0,
                             bargroupgap = 0)
-    #fig7.update_polars(bgcolor="#2596be")
-    #fig1.update_xaxes(rangeslider_visible=True)
+    fig7.update_xaxes(gridcolor='#1B2AAA')
+    fig7.update_yaxes(gridcolor='#1B2AAA')
     return fig7
 
 @app.callback(Output('contour-live-graph', 'figure'),[ Input('contour-graph-update', 'n_intervals') ])
 def update_graph_contour(n):
-        # if file does not exist write header
-    df_contour = pd.read_json('mintsData\\rawMQTT\\001e0636e527\\OPCN3.json', lines = True) 
-    if not os.path.isfile('empty.csv'):
-       df_contour.to_csv('empty.csv', header='column_names')
-    else: # else it exists so append without writing the header
-       df_contour.to_csv('empty.csv', mode='a', header=False)
-    df = pd.read_csv("empty.csv")
-    print("length",len(df))
-    date_time_contour=list(df['dateTime'])
-    dates_list =  list(pd.to_datetime(date_time_contour, format='%Y-%m-%d %H:%M:%S.%f').to_pydatetime())
-    #c= df_json[:,2:26]
-    df_bins = df.iloc[:,2:26]
-    df_bins_log = (np.log(df_bins)).replace(-np.inf, 2)
-    list_bins = df_bins_log.values.tolist()
+    # if file does not exist write header
+    # time.sleep(5)
     
-    bin_boundries_high = [.46,.66,1,1.3,1.7,2.3,3.0,4.0,5.2,6.5,8,10,12,14,16,18,20,22,25,28,31,34,37,40]
-    bin_boundries_low  = [0.35,.46,.66,1,1.3,1.7,2.3,3.0,4.0,5.2,6.5,8,10,12,14,16,18,20,22,25,28,31,34,37]
-    bin_boundries_avg_size = list((np.add(bin_boundries_high , bin_boundries_low))/2)  
-    fig8 = go.Figure(data =
-        go.Contour(
-            z=list_bins,
-         # x=dates_list,
-            y=bin_boundries_avg_size # vertical axis
-        ))
-#layout = go.Layout(xaxis = dict(range = [min(date_time_contour),max(date_time_contour)]),)#yaxis = dict(range = [min(c4h10),max(c4h10)]))
-
-# fig=go.Figure(data,)#layout)
-# fig.update_layout( 
-#                     xaxis_title="Date Time ",
-#                     yaxis_title="Size",
-#                     #plot_bgcolor=app_color["graph_bg"],
-#                     #paper_bgcolor=app_color["graph_bg"],
-#                     font_color="white",
-#                     font=dict(
-#                     color="white"
-#                     )
-#                   )
-
-#pyo.plot(fig)
-    #layout = go.Layout(xaxis = dict(range = [min(date_time_contour),max(date_time_contour)]),)#yaxis = dict(range = [min(c4h10),max(c4h10)]))
-
-    #fig8=go.Figure(data,)#layout)
-    fig8.update_layout( 
-                        xaxis_title="Date Time ",
-                        yaxis_title="Size",
-                        #plot_bgcolor=app_color["graph_bg"],
-                        paper_bgcolor=app_color["graph_bg"],
-                        font_color="white",
-                        font=dict(
-                        color="white"
-                        )
-                      )
-
-    return fig8
+    df_json = pd.read_json('mintsData\\rawMQTT\\001e0636e527\\OPCN3.json', lines = True) 
+    print(df_json)
+    global df_updated
+    df_updated = df_updated.append(df_json,ignore_index = True)
+    df_updated = df_updated.drop_duplicates()
+    print("SDASDAD",df_updated)
+    if(len(df_updated)>1):
+        date_time_contour=list(df_updated['dateTime'])
+    
+        df_bins = df_updated.iloc[:,2:26]
+        df_bins_log = (np.log(df_bins)).replace(-np.inf, np.finfo(float).eps)
+        list_bins = df_bins_log.values.tolist()
+        
+        bin_boundries_high = [.46,.66,1,1.3,1.7,2.3,3.0,4.0,5.2,6.5,8,10,12,14,16,18,20,22,25,28,31,34,37,40]
+        bin_boundries_low  = [0.35,.46,.66,1,1.3,1.7,2.3,3.0,4.0,5.2,6.5,8,10,12,14,16,18,20,22,25,28,31,34,37]
+        bin_boundries_avg_size = list(np.log((np.add(bin_boundries_high , bin_boundries_low))/2))  
+        print("z",list_bins[0][0:5], len(list_bins[0]))
+        print("date",date_time_contour[0:5])
+        print("avg",bin_boundries_avg_size[0:2])
+        fig8 = go.Figure(data =
+            go.Contour(
+                z=list_bins,
+                x=date_time_contour,
+                y=bin_boundries_avg_size # vertical axis
+            ))
+    
+        fig8.update_layout( 
+                            xaxis_title="Date Time ",
+                            yaxis_title="Size",
+                            #plot_bgcolor=app_color["graph_bg"],
+                            paper_bgcolor=app_color["graph_bg"],
+                            font_color="white",
+                            # font=dict(
+                            # color="white"
+                            # )
+                          )
+    
+        return fig8
 @app.callback(Output('map-live-graph', 'figure'),[ Input('map-graph-update', 'n_intervals') ])
 def update_graph_map(n):
     df_json = pd.read_json('mintsData\\rawMQTT\\001e0636e527\\GPGGA.json', lines = True)
@@ -526,8 +547,8 @@ def update_graph_map(n):
     lon.append(df_json['longitude'][0]/100)
     list_lat= list(lat)
     list_lon= list(lon)
-    print("lat",list_lat)
-    print("lon",list_lon)
+    #print("lat",list_lat)
+    #print("lon",list_lon)
     fig9 = px.scatter_mapbox(lat=list_lat, lon=list_lon, #hover_name="City", hover_data=["State", "Population"],
                         color_discrete_sequence=["fuchsia"], zoom=3, height=300)
     fig9.update_layout(mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0})
